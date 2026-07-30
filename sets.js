@@ -25,8 +25,11 @@
 
 window.BEAM_SETS = [
   {
+    // 末尾の ?from=beam は、公式サイト側で「ホーム画面に追加しませんか」の
+    // 案内をすぐ出すための目印。外すと案内が遅れて出るようになるだけで、
+    // ページの中身は変わりません。
     name: "ROCKETs 公式サイト",
-    url: "https://rockets-band.vercel.app",
+    url: "https://rockets-band.vercel.app/?from=beam",
     note: "ライブ情報・音源・写真・物販 ぜんぶここ"
   },
   {
