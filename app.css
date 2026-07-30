@@ -1,0 +1,449 @@
+/* ============================================================
+   BEAM — スタイル
+   モノクロ／落ち着いた／スマホ最優先
+   ============================================================ */
+
+:root{
+  --bg:#ffffff;
+  --fg:#0b0b0b;
+  --muted:#767676;
+  --line:#e5e5e5;
+  --line-strong:#0b0b0b;
+  --surface:#ffffff;
+  --surface-2:#fafafa;
+  --danger:#8a1a1a;
+  --radius:16px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0b0b0b;
+    --fg:#f4f4f4;
+    --muted:#8c8c8c;
+    --line:#242424;
+    --line-strong:#f4f4f4;
+    --surface:#111111;
+    --surface-2:#161616;
+    --danger:#ff7a7a;
+  }
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+/* .beamer / .sheet-wrap は display:flex を持つため、これが無いと
+   hidden 属性が効かず、開いていないはずの画面が出っぱなしになる。 */
+[hidden]{ display:none !important; }
+
+html,body{ margin:0; padding:0; }
+
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  line-height:1.6;
+  overscroll-behavior-y:none;
+}
+
+body.locked{ overflow:hidden; }
+
+button,input{ font:inherit; color:inherit; }
+
+/* ---------- ホーム ---------- */
+
+.screen{
+  max-width:520px;
+  margin:0 auto;
+  padding:calc(var(--safe-t) + 40px) 20px calc(var(--safe-b) + 40px);
+}
+
+.head{ text-align:center; margin-bottom:34px; }
+
+.mark{ color:var(--fg); line-height:0; margin-bottom:12px; }
+
+.wordmark{
+  margin:0;
+  font-size:23px;
+  font-weight:700;
+  letter-spacing:.34em;
+  text-indent:.34em;
+  line-height:1.2;
+}
+
+.tagline{
+  margin:8px 0 0;
+  font-size:13px;
+  color:var(--muted);
+  letter-spacing:.14em;
+  text-indent:.14em;
+}
+
+/* ---------- セット一覧 ---------- */
+
+.list{ display:flex; flex-direction:column; gap:10px; }
+
+.card{
+  display:flex;
+  align-items:stretch;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:var(--surface);
+  overflow:hidden;
+  transition:border-color .15s ease;
+}
+.card:hover{ border-color:var(--muted); }
+
+.card-main{
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
+  padding:16px 6px 16px 18px;
+  background:none;
+  border:0;
+  text-align:left;
+  cursor:pointer;
+}
+.card-main:active{ background:var(--surface-2); }
+
+.card-idx{
+  flex:0 0 auto;
+  width:22px;
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.08em;
+  color:var(--muted);
+  padding-top:2px;
+  align-self:flex-start;
+}
+
+.card-text{ min-width:0; flex:1 1 auto; }
+
+.card-name{
+  display:block;
+  font-size:16px;
+  font-weight:650;
+  letter-spacing:.01em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.card-note{
+  display:block;
+  margin-top:2px;
+  font-size:12.5px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.card-tag{
+  display:inline-block;
+  margin-top:6px;
+  font-size:10px;
+  letter-spacing:.1em;
+  color:var(--muted);
+  border:1px solid var(--line);
+  border-radius:100px;
+  padding:1px 8px;
+}
+
+.card-go{
+  flex:0 0 auto;
+  align-self:center;
+  color:var(--muted);
+  padding-right:4px;
+  line-height:0;
+}
+
+.card-edit{
+  flex:0 0 auto;
+  width:48px;
+  border:0;
+  border-left:1px solid var(--line);
+  background:none;
+  color:var(--muted);
+  cursor:pointer;
+  line-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card-edit:active{ background:var(--surface-2); }
+
+.empty{
+  border:1px dashed var(--line);
+  border-radius:var(--radius);
+  padding:28px 20px;
+  text-align:center;
+  font-size:13.5px;
+  color:var(--muted);
+}
+
+/* ---------- 追加ボタン ---------- */
+
+.add-btn{
+  width:100%;
+  margin-top:14px;
+  padding:15px;
+  border:1px dashed var(--line);
+  border-radius:var(--radius);
+  background:none;
+  color:var(--muted);
+  font-size:14px;
+  letter-spacing:.06em;
+  cursor:pointer;
+}
+.add-btn:active{ background:var(--surface-2); }
+.add-plus{ font-weight:700; }
+
+/* ---------- ヒント ---------- */
+
+.hint{
+  position:relative;
+  margin:26px 0 0;
+  padding:14px 40px 14px 16px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-2);
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.75;
+}
+.hint strong{ color:var(--fg); font-weight:650; }
+.hint-sub{ font-size:11.5px; }
+.glyph{ vertical-align:-2px; margin:0 3px; }
+.hint-x{
+  position:absolute; top:8px; right:8px;
+  width:26px; height:26px;
+  border:0; background:none; color:var(--muted);
+  font-size:12px; cursor:pointer;
+}
+
+.foot{
+  margin-top:40px;
+  text-align:center;
+  font-size:10.5px;
+  letter-spacing:.22em;
+  color:var(--muted);
+}
+.foot .dot{ margin:0 6px; }
+
+/* ============================================================
+   かざす画面 — 常に白背景（暗い会場でもスキャンが通るように）
+   ============================================================ */
+
+.beamer{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  background:#ffffff;
+  color:#0b0b0b;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  padding:calc(var(--safe-t) + 22px) 20px calc(var(--safe-b) + 22px);
+  overflow:hidden;
+}
+
+.beamer-close{
+  position:absolute;
+  top:calc(var(--safe-t) + 10px);
+  right:12px;
+  width:44px; height:44px;
+  border:0; background:none;
+  color:#8a8a8a;
+  font-size:17px;
+  cursor:pointer;
+  z-index:2;
+}
+
+.beamer-inner{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:0;
+}
+
+.beamer-lead{
+  margin:0 0 4px;
+  font-size:11.5px;
+  letter-spacing:.2em;
+  text-indent:.2em;
+  color:#8a8a8a;
+}
+
+.beamer-name{
+  margin:0 0 18px;
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:.02em;
+  text-align:center;
+  max-width:90%;
+}
+
+.qr-frame{
+  background:#ffffff;
+  border-radius:8px;
+  line-height:0;
+}
+
+.qr{
+  display:block;
+  width:min(84vw, 56vh, 440px);
+  height:min(84vw, 56vh, 440px);
+  image-rendering:pixelated;
+}
+
+.beamer-url{
+  margin:18px 0 0;
+  font-size:12px;
+  color:#8a8a8a;
+  text-align:center;
+  max-width:88%;
+  word-break:break-all;
+  line-height:1.5;
+}
+
+.beamer-actions{
+  flex:0 0 auto;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+}
+
+.beamer-note{
+  margin:10px 0 0;
+  font-size:11px;
+  color:#9a9a9a;
+}
+
+/* ---------- ボタン ---------- */
+
+.btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  padding:16px;
+  border-radius:100px;
+  border:1px solid transparent;
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:.04em;
+  cursor:pointer;
+}
+
+.beamer .btn-primary{ background:#0b0b0b; color:#ffffff; }
+.beamer .btn-primary:active{ background:#333333; }
+
+.btn-primary{ background:var(--fg); color:var(--bg); }
+.btn-primary:active{ opacity:.8; }
+
+.btn-ghost{
+  background:none;
+  color:var(--muted);
+  border-color:var(--line);
+}
+.btn-ghost:active{ background:var(--surface-2); }
+
+.btn-danger{
+  background:none;
+  color:var(--danger);
+  border-color:transparent;
+  font-size:13.5px;
+  font-weight:500;
+  padding:12px;
+}
+
+/* ============================================================
+   追加／編集シート
+   ============================================================ */
+
+.sheet-wrap{ position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; justify-content:center; }
+.sheet-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.42); }
+
+.sheet{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  background:var(--bg);
+  border-radius:22px 22px 0 0;
+  border-top:1px solid var(--line);
+  padding:10px 20px calc(var(--safe-b) + 22px);
+  max-height:92vh;
+  overflow-y:auto;
+  animation:rise .22s cubic-bezier(.2,.7,.3,1);
+}
+@keyframes rise{ from{ transform:translateY(24px); opacity:.4 } to{ transform:none; opacity:1 } }
+@media (min-width:560px){
+  .sheet-wrap{ align-items:center; }
+  .sheet{ border-radius:22px; border:1px solid var(--line); }
+}
+
+.sheet-grip{
+  width:38px; height:4px; border-radius:4px;
+  background:var(--line);
+  margin:2px auto 16px;
+}
+
+.sheet-title{ margin:0 0 20px; font-size:17px; font-weight:700; letter-spacing:.04em; }
+
+.field{ display:block; margin-bottom:16px; }
+.field-label{ display:block; font-size:12px; color:var(--muted); letter-spacing:.1em; margin-bottom:7px; }
+.field-opt{ margin-left:8px; font-size:10.5px; border:1px solid var(--line); border-radius:100px; padding:0 6px; }
+
+.field input{
+  width:100%;
+  padding:14px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-2);
+  outline:none;
+}
+.field input:focus{ border-color:var(--line-strong); background:var(--surface); }
+
+.field-error{
+  margin:-6px 0 14px;
+  font-size:12.5px;
+  color:var(--danger);
+}
+
+.sheet-actions{ display:flex; flex-direction:column; gap:9px; margin-top:22px; }
+
+/* ---------- トースト ---------- */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(var(--safe-b) + 28px);
+  transform:translateX(-50%);
+  z-index:80;
+  background:#0b0b0b;
+  color:#fff;
+  font-size:13px;
+  padding:11px 20px;
+  border-radius:100px;
+  white-space:nowrap;
+  animation:fadein .18s ease;
+}
+@media (prefers-color-scheme: dark){
+  .toast{ background:#f4f4f4; color:#0b0b0b; }
+}
+@keyframes fadein{ from{ opacity:0; transform:translate(-50%,8px) } to{ opacity:1; transform:translate(-50%,0) } }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+}
