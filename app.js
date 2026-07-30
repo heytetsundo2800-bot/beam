@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'v1.0';
+  var VERSION = 'v1.1';
   var LS_KEY = 'beam.custom.v1';
   var LS_HINT = 'beam.hint.dismissed.v1';
 
@@ -332,14 +332,236 @@
   }
 
   /* ============================================================
-     ホーム画面に追加のヒント（iPhoneでインストール前だけ出す）
+     環境の判定
      ============================================================ */
 
-  function maybeShowHint() {
-    var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  var UA = navigator.userAgent || '';
+
+  var env = {
+    // LINEのアプリ内ブラウザ。UAの末尾に " Line/12.x.x" が付く
+    line:       /\bLine\//i.test(UA),
+    // その他のアプリ内ブラウザ（Instagram / Facebook / X など）
+    otherInApp: /FBAN|FBAV|FB_IAB|Instagram|\bGSA\/|MicroMessenger/i.test(UA),
+    ios:        /iPad|iPhone|iPod/.test(UA) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+    android:    /Android/.test(UA),
+    standalone: window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true
+  };
+  env.inApp  = env.line || env.otherInApp;
+  env.mobile = env.ios || env.android;
+  // iOSで「ホーム画面に追加」ができるのは Safari だけ（Chrome等の別ブラウザでは出ない）
+  env.iosSafari = env.ios && !env.inApp && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(UA);
+
+  // Androidの「インストール」を1タップで出せるようにイベントを捕まえておく
+  var deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstall = e;
+    if (!$('setup').hidden) buildSetup();   // 表示中なら手順を1タップ版に差し替える
+  });
+
+  /* ---------- 共有用URL（LINEから外部ブラウザで開かせる） ---------- */
+
+  function appUrl() {
+    return location.origin + location.pathname.replace(/index\.html$/, '');
+  }
+
+  // LINEはこのパラメータが付いたURLを、アプリ内ではなく端末の標準ブラウザで開く
+  function shareUrl() {
+    var u = appUrl();
+    return u + (u.indexOf('?') === -1 ? '?' : '&') + 'openExternalBrowser=1';
+  }
+
+  function shareApp() {
+    var data = { title: 'BEAM — かざして、渡す。', url: shareUrl() };
+    if (navigator.share) {
+      navigator.share(data).catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        copyUrl(shareUrl());
+      });
+      return;
+    }
+    copyUrl(shareUrl());
+  }
+
+  /* ============================================================
+     アイコン（手順の中に出す小さな絵）
+     ============================================================ */
+
+  var ICONS = {
+    share: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 3v12M12 3l-3.5 3.5M12 3l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 13v5.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    dots3v: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>',
+    dots3h: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
+    plusBox:'<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 8.5v7M8.5 12h7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>'
+  };
+
+  function ui(label, icon) {
+    return '<span class="ui">' + (icon ? ICONS[icon] : '') + label + '</span>';
+  }
+
+  function renderSteps(el, items) {
+    el.innerHTML = '';
+    items.forEach(function (html) {
+      var li = document.createElement('li');
+      li.innerHTML = html;
+      el.appendChild(li);
+    });
+  }
+
+  /* ============================================================
+     セットアップ案内（ホーム画面に追加）
+     ============================================================ */
+
+  function buildSetup() {
+    var heading = $('setupHeading');
+    var lead = $('setupLead');
+    var primary = $('setupPrimary');
+    var qrWrap = $('setupQrWrap');
+
+    primary.hidden = true;
+    qrWrap.hidden = true;
+    lead.textContent = 'かざすだけで、相手のスマホにURLを渡せるアプリです。';
+
+    /* --- PC --- */
+    if (!env.mobile) {
+      heading.textContent = 'BEAMはスマホで使うアプリです';
+      lead.innerHTML = 'パソコンでも中身は確認できますが、<br>実際に渡すのはスマホからになります。';
+      renderSteps($('steps'), [
+        'スマホのカメラで、下のQRコードを読み取る',
+        '開いたページの案内どおりに<b>ホーム画面に追加</b>する',
+        'ホーム画面のアイコンから開けば準備完了'
+      ]);
+      qrWrap.hidden = false;
+      requestAnimationFrame(function () { drawQR($('setupQr'), shareUrl()); });
+      $('setupSkip').textContent = 'パソコンで中身を見る';
+      return;
+    }
+
+    /* --- Android：1タップでインストールできる場合 --- */
+    if (env.android && deferredInstall) {
+      heading.textContent = 'ホーム画面に追加してください';
+      renderSteps($('steps'), [
+        '下の<b>「ホーム画面に追加」</b>ボタンを押す',
+        '確認が出たら<b>「インストール」</b>を押す',
+        'ホーム画面にBEAMのアイコンができれば完了'
+      ]);
+      primary.hidden = false;
+      primary.textContent = 'ホーム画面に追加';
+      primary.onclick = function () {
+        deferredInstall.prompt();
+        deferredInstall.userChoice.then(function (r) {
+          deferredInstall = null;
+          if (r && r.outcome === 'accepted') { closeSetup(); toast('追加しました'); }
+          else buildSetup();
+        });
+      };
+      return;
+    }
+
+    /* --- Android：手動 --- */
+    if (env.android) {
+      heading.textContent = 'ホーム画面に追加してください';
+      renderSteps($('steps'), [
+        '画面の<b>右上</b>にある' + ui('', 'dots3v') + 'を押す',
+        'メニューの中の<b>「ホーム画面に追加」</b>（または「アプリをインストール」）を押す',
+        '<b>「追加」</b>を押す → ホーム画面にBEAMのアイコンができます'
+      ]);
+      return;
+    }
+
+    /* --- iPhone：Safari以外で開いている --- */
+    if (env.ios && !env.iosSafari) {
+      heading.textContent = 'Safariで開き直してください';
+      lead.innerHTML = 'iPhoneでホーム画面に追加できるのは<br><b>Safari</b>だけです。';
+      renderSteps($('steps'), [
+        '下の<b>「URLをコピーする」</b>を押す',
+        '<b>Safari</b>を開いて、アドレス欄に貼り付けて開く',
+        '出てくる案内どおりにホーム画面に追加する'
+      ]);
+      primary.hidden = false;
+      primary.textContent = 'URLをコピーする';
+      primary.onclick = function () { copyUrl(appUrl()); };
+      return;
+    }
+
+    /* --- iPhone Safari（本命） --- */
+    heading.textContent = 'ホーム画面に追加してください';
+    renderSteps($('steps'), [
+      '画面の<b>いちばん下</b>にある' + ui('共有', 'share') + 'ボタンを押す',
+      'メニューを<b>下にスクロール</b>して' + ui('ホーム画面に追加', 'plusBox') + 'を押す',
+      '<b>右上の「追加」</b>を押す → ホーム画面にBEAMのアイコンができます'
+    ]);
+  }
+
+  function openSetup() {
+    buildSetup();
+    $('setup').hidden = false;
+    document.body.classList.add('locked');
+  }
+
+  function closeSetup() {
+    $('setup').hidden = true;
+    document.body.classList.remove('locked');
+    try { localStorage.setItem(LS_HINT, '1'); } catch (e) {}
+    maybeShowHint();
+  }
+
+  /* ============================================================
+     アプリ内ブラウザ（LINEなど）の案内
+     ============================================================ */
+
+  function buildInApp() {
+    var name = env.line ? 'LINE' : 'アプリ';
+    $('inappHeading').textContent = name + 'の中で開いています';
+
+    if (env.ios) {
+      renderSteps($('inappSteps'), [
+        '画面の<b>右下</b>にある' + ui('', 'dots3h') + 'を押す',
+        '<b>「他のアプリで開く」</b>または<b>「Safariで開く」</b>を押す',
+        'Safariが開いたら、案内どおりにホーム画面に追加する'
+      ]);
+    } else {
+      renderSteps($('inappSteps'), [
+        '画面の<b>右上</b>にある' + ui('', 'dots3v') + 'を押す',
+        '<b>「他のアプリで開く」</b>または<b>「ブラウザで開く」</b>を押す',
+        'Chromeが開いたら、案内どおりにホーム画面に追加する'
+      ]);
+    }
+
+    $('inappOpen').onclick = function () {
+      // LINEはこのパラメータ付きURLを標準ブラウザで開く。
+      // 効かない環境ではこのまま再読み込みされるだけなので、下の手動手順に誘導する。
+      location.href = shareUrl();
+      setTimeout(function () { toast('開かなければ、下の手順でお願いします'); }, 1600);
+    };
+    $('inappCopy').onclick = function () { copyUrl(appUrl()); };
+  }
+
+  function openInAppGuide() {
+    buildInApp();
+    $('inapp').hidden = false;
+    document.body.classList.add('locked');
+  }
+
+  /* ============================================================
+     起動時にどの画面を出すか決める
+     ============================================================ */
+
+  function routeFirstScreen() {
+    if (env.standalone) return;                 // すでにアプリとして開いている → 何も出さない
+
+    if (env.inApp) { openInAppGuide(); return; } // LINEなどの中 → まずブラウザに出てもらう
+
     var dismissed = false;
     try { dismissed = localStorage.getItem(LS_HINT) === '1'; } catch (e) {}
-    if (standalone || dismissed) return;
+
+    if (!dismissed) { openSetup(); return; }     // 初回 → セットアップ案内
+    maybeShowHint();                             // 2回目以降 → 小さいヒントだけ
+  }
+
+  function maybeShowHint() {
+    if (env.standalone) return;
     $('installHint').hidden = false;
   }
 
@@ -354,15 +576,22 @@
   $('deleteBtn').addEventListener('click', deleteCurrent);
   $('sheetBackdrop').addEventListener('click', closeSheet);
   $('sheetForm').addEventListener('submit', submitSheet);
-  $('hintClose').addEventListener('click', function () {
-    $('installHint').hidden = true;
-    try { localStorage.setItem(LS_HINT, '1'); } catch (e) {}
+
+  $('hintClose').addEventListener('click', function () { $('installHint').hidden = true; });
+  $('hintGo').addEventListener('click', openSetup);
+  $('setupLink').addEventListener('click', openSetup);
+  $('setupSkip').addEventListener('click', closeSetup);
+  $('shareAppBtn').addEventListener('click', shareApp);
+  $('inappSkip').addEventListener('click', function () {
+    $('inapp').hidden = true;
+    document.body.classList.remove('locked');
   });
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!sheetWrap.hidden) closeSheet();
     else if (!beamer.hidden) closeBeamer();
+    else if (!$('setup').hidden) closeSetup();
   });
 
   // 画面回転・リサイズでQRを描き直す
@@ -373,9 +602,14 @@
     resizeTimer = setTimeout(function () { if (state.current) drawQR($('qr'), state.current.url); }, 120);
   });
 
+  // 共有用に付けた ?openExternalBrowser=1 はアドレス欄から消しておく
+  if (location.search) {
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  }
+
   $('verLabel').textContent = VERSION;
   render();
-  maybeShowHint();
+  routeFirstScreen();
 
   // オフラインでも起動できるようにする
   if ('serviceWorker' in navigator) {

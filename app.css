@@ -209,13 +209,13 @@ button,input{ font:inherit; color:inherit; }
 .hint{
   position:relative;
   margin:26px 0 0;
-  padding:14px 40px 14px 16px;
+  padding:15px 40px 15px 16px;
   border:1px solid var(--line);
   border-radius:12px;
   background:var(--surface-2);
   font-size:12.5px;
   color:var(--muted);
-  line-height:1.75;
+  line-height:1.7;
 }
 .hint strong{ color:var(--fg); font-weight:650; }
 .hint-sub{ font-size:11.5px; }
@@ -226,15 +226,211 @@ button,input{ font:inherit; color:inherit; }
   border:0; background:none; color:var(--muted);
   font-size:12px; cursor:pointer;
 }
+.hint-go{
+  display:block;
+  margin-top:11px;
+  padding:9px 16px;
+  border:1px solid var(--line-strong);
+  border-radius:100px;
+  background:none;
+  color:var(--fg);
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer;
+}
+.hint-go:active{ background:var(--fg); color:var(--bg); }
 
 .foot{
-  margin-top:40px;
+  margin-top:36px;
   text-align:center;
-  font-size:10.5px;
-  letter-spacing:.22em;
   color:var(--muted);
 }
+.foot-link{
+  border:0; background:none; cursor:pointer;
+  color:var(--muted);
+  font-size:12.5px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  padding:8px;
+}
+.foot-link:active{ color:var(--fg); }
+.foot-link-sm{ font-size:10px; letter-spacing:.06em; padding:0; }
+.foot-meta{
+  display:block;
+  margin-top:10px;
+  font-size:10px;
+  letter-spacing:.2em;
+}
 .foot .dot{ margin:0 6px; }
+
+/* ============================================================
+   セットアップ案内 / アプリ内ブラウザ案内
+   ============================================================ */
+
+.setup{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  background:var(--bg);
+  color:var(--fg);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+.setup-inner{
+  max-width:460px;
+  margin:0 auto;
+  padding:calc(var(--safe-t) + 46px) 24px calc(var(--safe-b) + 40px);
+  text-align:center;
+}
+
+.setup-mark{ line-height:0; margin-bottom:12px; }
+
+.setup-word{
+  margin:0 0 10px;
+  font-size:21px;
+  font-weight:700;
+  letter-spacing:.34em;
+  text-indent:.34em;
+}
+
+.setup-lead{
+  margin:0 0 32px;
+  font-size:13.5px;
+  color:var(--muted);
+  line-height:1.85;
+}
+.setup-lead strong{ color:var(--fg); font-weight:650; }
+
+.setup-h2{
+  margin:0 0 22px;
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:.02em;
+  line-height:1.6;
+}
+
+/* ---------- 手順リスト ---------- */
+
+.steps{
+  list-style:none;
+  counter-reset:step;
+  margin:0 0 30px;
+  padding:0;
+  text-align:left;
+}
+
+.steps li{
+  counter-increment:step;
+  position:relative;
+  padding:0 0 22px 46px;
+  font-size:14.5px;
+  line-height:1.7;
+}
+
+.steps li::before{
+  content:counter(step);
+  position:absolute;
+  left:0;
+  top:0;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:var(--fg);
+  color:var(--bg);
+  font-size:12.5px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 縦の連結線 */
+.steps li::after{
+  content:"";
+  position:absolute;
+  left:13.5px;
+  top:32px;
+  bottom:6px;
+  width:1px;
+  background:var(--line);
+}
+.steps li:last-child{ padding-bottom:4px; }
+.steps li:last-child::after{ display:none; }
+
+.steps b{ font-weight:650; }
+
+.steps .ui{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:2px 8px;
+  margin:0 3px;
+  background:var(--surface-2);
+  font-size:13px;
+  font-weight:600;
+  vertical-align:-1px;
+  white-space:nowrap;
+  min-width:30px;
+  justify-content:center;
+}
+.steps .ui svg{ vertical-align:-2px; }
+
+.steps-sm li{ font-size:13px; padding-bottom:16px; padding-left:38px; }
+.steps-sm li::before{ width:22px; height:22px; font-size:11px; }
+.steps-sm li::after{ left:10.5px; top:26px; }
+
+/* ---------- PC用QR ---------- */
+
+.setup-qr{ margin:0 0 30px; }
+.setup-qr-canvas{
+  display:block;
+  width:200px;
+  height:200px;
+  margin:0 auto;
+  background:#fff;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  image-rendering:pixelated;
+}
+.setup-qr-note{
+  margin:12px 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* ---------- アクション ---------- */
+
+.setup-actions{ display:flex; flex-direction:column; gap:10px; }
+
+.setup-fallback{
+  margin-top:34px;
+  padding-top:24px;
+  border-top:1px solid var(--line);
+  text-align:left;
+}
+.setup-fallback-title{
+  margin:0 0 16px;
+  font-size:11.5px;
+  letter-spacing:.14em;
+  color:var(--muted);
+  text-align:center;
+}
+
+.setup-skip-sm{
+  display:block;
+  margin:26px auto 0;
+  border:0; background:none;
+  color:var(--muted);
+  font-size:12px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+  padding:8px;
+}
 
 /* ============================================================
    かざす画面 — 常に白背景（暗い会場でもスキャンが通るように）

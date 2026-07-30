@@ -42,17 +42,83 @@
   </button>
 
   <p class="hint" id="installHint" hidden>
-    <strong>ホーム画面に追加</strong>すると、アプリとして一瞬で開けます。<br>
-    <span class="hint-sub">Safariの共有ボタン<svg class="glyph" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 3v12M12 3l-3.5 3.5M12 3l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 13v5.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>→「ホーム画面に追加」</span>
+    <strong>まだホーム画面に追加されていません。</strong><br>
+    <span class="hint-sub">アプリとして開けるようにすると、会場で一瞬で出せます。</span>
+    <button class="hint-go" id="hintGo" type="button">追加のしかたを見る</button>
     <button class="hint-x" id="hintClose" type="button" aria-label="閉じる">✕</button>
   </p>
 
   <footer class="foot">
-    <span>BEAM</span>
-    <span class="dot">·</span>
-    <span id="verLabel">v1.0</span>
+    <button class="foot-link" id="shareAppBtn" type="button">メンバーにBEAMを送る</button>
+    <span class="foot-meta">
+      <span>BEAM</span>
+      <span class="dot">·</span>
+      <span id="verLabel">v1.1</span>
+      <span class="dot">·</span>
+      <button class="foot-link foot-link-sm" id="setupLink" type="button">ホーム画面に追加</button>
+    </span>
   </footer>
 </main>
+
+
+<!-- ==================== セットアップ案内（ホーム画面に追加） ==================== -->
+<div id="setup" class="setup" hidden>
+  <div class="setup-inner">
+    <div class="setup-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="40" height="40">
+        <circle cx="24" cy="24" r="4.2" fill="currentColor"/>
+        <path d="M32.5 15.5a12 12 0 0 1 0 17M38.5 9.5a20.5 20.5 0 0 1 0 29" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M15.5 15.5a12 12 0 0 0 0 17M9.5 9.5a20.5 20.5 0 0 0 0 29" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="setup-word">BEAM</h1>
+    <p class="setup-lead" id="setupLead">かざすだけで、相手のスマホにURLを渡せるアプリです。</p>
+
+    <h2 class="setup-h2" id="setupHeading">ホーム画面に追加してください</h2>
+    <ol class="steps" id="steps"></ol>
+
+    <div class="setup-qr" id="setupQrWrap" hidden>
+      <canvas id="setupQr" class="setup-qr-canvas"></canvas>
+      <p class="setup-qr-note">スマホのカメラでこれを読み取ってください</p>
+    </div>
+
+    <div class="setup-actions">
+      <button class="btn btn-primary" id="setupPrimary" type="button" hidden></button>
+      <button class="btn btn-ghost" id="setupSkip" type="button">あとでやる — 今すぐ使う</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== LINE内ブラウザの案内 ==================== -->
+<div id="inapp" class="setup setup-inapp" hidden>
+  <div class="setup-inner">
+    <div class="setup-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="40" height="40">
+        <path d="M27 8h13v13" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 8L23 25" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M36 29v9a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V16a4 4 0 0 1 4-4h9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2 class="setup-h2" id="inappHeading">LINEの中で開いています</h2>
+    <p class="setup-lead">
+      このままだと<strong>ホーム画面に追加できません。</strong><br>
+      下のボタンでブラウザを開き直してください。
+    </p>
+
+    <div class="setup-actions">
+      <button class="btn btn-primary" id="inappOpen" type="button">ブラウザで開く</button>
+      <button class="btn btn-ghost" id="inappCopy" type="button">URLをコピーする</button>
+    </div>
+
+    <div class="setup-fallback">
+      <p class="setup-fallback-title">ボタンで開けないときは</p>
+      <ol class="steps steps-sm" id="inappSteps"></ol>
+    </div>
+
+    <button class="setup-skip-sm" id="inappSkip" type="button">このまま中身だけ見る</button>
+  </div>
+</div>
 
 
 <!-- ==================== かざす画面 ==================== -->
