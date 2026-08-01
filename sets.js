@@ -53,6 +53,6 @@ window.BEAM_SETS = [
     // QRで読み取る場合は元から標準ブラウザで開くので、付いていても害はない。
     name: "せーの!!（ゲーム）",
     url: "https://seno-game.vercel.app/?openExternalBrowser=1",
-    note: "その場で1〜10人。合図に合わせて全員で同時にタップ"
+    note: "1〜10人。同時にタップして遊ぶゲーム"
   }
 ];
