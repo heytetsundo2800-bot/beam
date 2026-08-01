@@ -46,5 +46,13 @@ window.BEAM_SETS = [
     name: "TikTok",
     url: "https://www.tiktok.com/@rockets_band",
     note: "@rockets_band"
+  },
+  {
+    // 末尾の ?openExternalBrowser=1 は、LINEで送られたときに
+    // LINEの中のブラウザではなく端末の標準ブラウザで開かせるための目印。
+    // QRで読み取る場合は元から標準ブラウザで開くので、付いていても害はない。
+    name: "せーの!!（ゲーム）",
+    url: "https://seno-game.vercel.app/?openExternalBrowser=1",
+    note: "その場で1〜10人。合図に合わせて全員で同時にタップ"
   }
 ];
